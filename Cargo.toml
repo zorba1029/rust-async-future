@@ -1,0 +1,10 @@
+[workspace]
+members = [
+    "async-part1",
+    "async-part2",
+    "async-part3",
+    "async-part4",
+    "async-part5",
+    "async-part6",
+]
+workspace.resolver = "1"
