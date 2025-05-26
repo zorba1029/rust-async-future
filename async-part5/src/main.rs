@@ -6,7 +6,7 @@ use log::{info, trace};
 use std::pin::Pin;
 use std::time::Instant;
 // use futures::StreamExt;
-// use tokio_stream::StreamExt;
+use tokio_stream::StreamExt;
 use tokio::sync::mpsc;
 
 mod data_available;
@@ -59,6 +59,33 @@ use collector::Collector;
 //     }
 // }
 
+async fn test_producer() {
+    let data_available = DataAvailable::new();  
+
+    // Create an mpsc channel to send and receive data
+    let (tx, rx) = mpsc::channel(1);
+
+    // Create a new Producer stream
+    let mut producer = Producer::new(data_available, rx, Box::new(|x: i32| {
+        info!("  -- Processing data: {}", x);
+        x + 1
+    }));
+
+    // Spawn a task to send data into the channel
+    tokio::spawn(async move {
+        for i in 0..=10 {
+            tx.send(i).await.unwrap();
+        }
+    });
+
+    // Consume the stream and print the results
+    let mut i = 0;
+    while let Some(data) = producer.next().await {
+        info!("Produced data[{}] : {}", i, data);
+        i += 1;
+    }
+}
+
 // ----------------------------------------------------------------
 //  Test: Collector
 // ----------------------------------------------------------------
@@ -100,18 +127,62 @@ use collector::Collector;
 //     info!("Collected Data : {:?}", collected_data);
 // }
 
+async fn test_collector() {
+    // Create a new DataAvailable stream
+    let data_available = DataAvailable::new();  
+
+    // Create an mpsc channel to send and receive data
+    let (tx, rx) = mpsc::channel(1);
+
+    // Create a new Producer stream
+    let producer = Producer::new(data_available, rx, Box::new(|x: i32| {
+        info!("  -- Processing data: {}", x);
+        x + 1
+    }));
+
+    // Spawn a task to send data into the channel and send an error
+    tokio::spawn(async  move {
+        for i in 0i32..900 {
+            if i == 11 {
+                let err = i.into_error_value();
+                tx.send(err).await.unwrap();
+            } else if let Err(_e) = tx.send(i).await {
+                break;  // Stop sending if the channel is closes
+            }
+        }
+    });
+
+    // Create a new Collector stream
+    let collector = Collector::new(producer);
+
+    // Wait for the Collector to finish and return the collected Vector
+    let collected_data = collector.await;
+
+    info!("Collected Data : {:?}", collected_data);
+}
+
 // ----------------------------------------------------------------
 // Test: 10,1000 Collectors
 // ----------------------------------------------------------------
 #[tokio::main(flavor = "multi_thread", worker_threads = 1)]
 async fn main() {
     env_logger::init();
+
+    info!("--- Test: Producer ---");
+    test_producer().await;
+
+    info!("--- Test: Collector ---");
+    test_collector().await;
+
+    //-------------------------------------------------------------
+    info!("--- Test: 10,1000 Collectors ---");
     let start_time = Instant::now();
 
     // Create a list of tasks
     let mut tasks = Vec::new();
 
     for _ in 0..10_000 {
+    // for _ in 0..10 {
         let (tx, rx) = mpsc::channel(3);
 
         // Create a new DataAvailable stream

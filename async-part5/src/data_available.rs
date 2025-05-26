@@ -41,13 +41,16 @@ impl DataAvailable {
     fn random_delay() -> Duration {
         #[allow(unused_mut)]
         #[allow(unused_variables)]
-        // let mut rng = rand::thread_rng();
+        let mut rng = rand::rng();
         // let millis = rng.gen_range(0..1000);
-        let millis = 500;
+        let millis = rng.random_range(0..500);
+        // let millis = 500;
         Duration::from_millis(millis)
     }
 }
 
+// Implement the Stream trait for DataAvailable
+// This allows DataAvailable to be used as a Stream that yields `bool` values
 impl Stream for DataAvailable {
     type Item = bool;
 
@@ -65,9 +68,7 @@ impl Stream for DataAvailable {
                     // 기존 sleep_future를 새로운 인스턴스로 교체
                     // If sleep_future exists, reset it with the new delay
                     if let Some(ref mut sleep_future) = *this.sleep_future {
-                        sleep_future
-                            .as_mut()
-                            .reset(tokio::time::Instant::now() + delay);
+                        sleep_future.as_mut().reset(tokio::time::Instant::now() + delay);
                     } else {
                         // If no sleep_future, create a new one and set it
                         let sleep = tokio::time::sleep(delay);

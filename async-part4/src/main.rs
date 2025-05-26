@@ -13,18 +13,14 @@ use std::task::{RawWaker, RawWakerVTable};
 // https://medium.com/@alfred.weirich/developing-asynchronous-components-in-rust-part-4-waking-57760d3b630b
 //--------------------------------------------------
 
-// async fn data_available(millis: u64) -> bool {
-//     tokio::time::sleep(Duration::from_millis(millis)).await;
-//     true
-// }
-
 /// The 'DataAvailable' structure simulates a future that waits for a specified
 /// number of milliseconds.
 /// It internally wraps 'tokio::time::Sleep' (an async sleep) and provides
 /// a state machine to manage its difference states of execution.
 #[pin_project]
 struct DataAvailableFuture {
-    state: i32,  // Tracks the state of the function
+    seq_no: i32,    // Sequence number for identification
+    state: i32,     // Tracks the state of the function
     #[pin]
     sleep_future: Option<tokio::time::Sleep>,  // The future for tokio::sleep, wrapped in Option
     sleep_millis: u64,  // Duration in milliseconds for whiich the future should wait
@@ -33,17 +29,19 @@ struct DataAvailableFuture {
 impl DataAvailableFuture {
     /// Creates a new 'DataAvailableFuture' instance
     /// @param sleep_millis: The number of milliseconds to sleep (delay) before the future resolves
-    pub fn new(millis: u64) -> Self {
+    pub fn new(seq_no: i32, millis: u64) -> Self {
         Self {
+            seq_no,     // Sequence number for identification
             state: 0,   // Initial state
-            sleep_future: None,  // Initially, there's no future for Laxy Initialization
-            sleep_millis: millis,  // Sleep duration in milliseconds
+            sleep_future: None,     // Initially, there's no future for Laxy Initialization
+            sleep_millis: millis,   // Sleep duration in milliseconds
         }
     }
 }   
 
-
+//--------------------------------------------------
 // 2. Waking Up via a Blocking Task
+//--------------------------------------------------
 // impl Future for DataAvailableFuture {
 //     type Output = bool;
 
@@ -109,6 +107,12 @@ impl DataAvailableFuture {
 //     }
 // }
 
+
+//--------------------------------------------------
+//--------------------------------------------------
+// 3. Providing a Custom Waker to the Sleep Feature
+//--------------------------------------------------
+
 //--------------------------------------------------
 // Custom waker
 //--------------------------------------------------
@@ -169,6 +173,7 @@ unsafe fn custom_waker_drop(ptr: *const ()) {
 }
 
 
+
 //--------------------------------------------------    
 // modified to use custom waker
 //--------------------------------------------------
@@ -183,7 +188,7 @@ impl Future for DataAvailableFuture {
             match *this.state {
                 // state 0: Initialize the timer
                 0 => {
-                    trace!("    |- DataAvailableFuture - State 0: Initialize sleep function");
+                    trace!("    |- [{}] DataAvailableFuture - State 0: Init <Sleep Future>", *this.seq_no);
                     if this.sleep_future.is_none() {
                         let sleep = tokio::time::sleep(Duration::from_millis(*this.sleep_millis));
                         this.sleep_future.set(Some(sleep));
@@ -194,24 +199,25 @@ impl Future for DataAvailableFuture {
                 // state 1: Wait for the sleep to complete
                 1 => {
                     if let Some(sleep_future) = this.sleep_future.as_mut().as_pin_mut() {
-                        trace!("    |- DataAvailableFuture - State 1: -->> sleep_future.poll(cx)");
-                        // Create a custom sleep waker
+                        trace!("    |- [{}] DataAvailableFuture - State 1: -->> POLL <Sleep Future>", *this.seq_no);
                         // 🔻🔻🔻🔻🔻🔻
+                        //-- <1> Create a NOOP-WAKER and a context
+                        //-- let waker = futures::task::noop_waker();
+                        //-- let mut sleep_cx = Context::from_waker(&waker);
+                        // <2> Create a CUSTOM SLEEP WAKER
                         let sleep_waker = cx.waker().clone();
                         let custom_sleep_waker = custom_sleep_waker(sleep_waker);
                         let mut sleep_cx = Context::from_waker(&custom_sleep_waker);
-                        // let waker =  futures::task::noop_waker();
-                        // let mut sleep_cx = Context::from_waker(&waker);
+                        // 🔺🔺🔺🔺🔺🔺              🔻🔻🔻🔻🔻🔻
                         match sleep_future.poll(&mut sleep_cx) {
-                        // 🔺🔺🔺🔺🔺🔺
                             Poll::Ready(()) => {
-                                trace!("    |- DataAvailableFuture - State 1: Sleep completed");
+                                trace!("    |- [{}] DataAvailableFuture - State 1: READY <Sleep Future>", *this.seq_no);
                                 this.sleep_future.set(None);  // Clear the sleep future (de-initialize the future)
                                 *this.state = 2;  // Transition to state 2 (data available)
                                 continue;
                             }
                             Poll::Pending => {
-                                trace!("    |- DataAvailableFuture - State 1: Sleep is pending");
+                                trace!("    |- [{}] DataAvailableFuture - State 1: PENDING <Sleep Future>", *this.seq_no);
                                 return Poll::Pending;  // Sleep not yet done, return Pending and stay in waiting state
                             }
                         }   
@@ -219,11 +225,11 @@ impl Future for DataAvailableFuture {
                 }
                 // state 2: Future is Done (Data is available
                 2 => {
-                    trace!("    |- DataAvailableFuture - State 2 [*]: Data is available (Sleep Ready)");
+                    trace!("    |-🔺[{}] DataAvailableFuture - State 2 [*]: DONE - Data is available (Sleep Ready)", *this.seq_no);
                     return Poll::Ready(true);  // Sleep Completed, return true
                 }
                 _ => {
-                    panic!("    |- DataAvailableFuture - Invalid state");
+                    panic!("    |- [{}] DataAvailableFuture - Invalid state", *this.seq_no);
                 }
             }
         }
@@ -231,24 +237,22 @@ impl Future for DataAvailableFuture {
 }
 
 ///---------------------------------------------
-/// 
-// async fn get_data() -> u64 {
-//     data_available(3000).await;
-//     42
-// }
+
 
 /// The 'GetDataFuture' structure represents an asynchronous task that waits for the data
 /// availability and then returns a fixed result (42).
 #[pin_project]
 struct GetDataFuture {
+    seq_no: i32,  // Sequence number for identification
     state: i32,  // Tracks the current state of the future
     #[pin]
     data_available_future: Option<DataAvailableFuture>,  // Wraps 'DataAvailableFuture' which waits for data
 }
 
 impl GetDataFuture {
-    pub fn new() -> Self {
+    pub fn new(seq_no: i32) -> Self {
         Self {
+            seq_no,  // Sequence number for identification
             state: 0,  // Initial state of the future
             data_available_future: None,  // Lazy initialization of the data availability future
         }
@@ -266,10 +270,10 @@ impl Future for GetDataFuture {
             match *this.state {
                 //-- state 0: Initialize the data availability future
                 0 => {
-                    trace!("GetDataFuture       - State 0: START =================");
-                    trace!("GetDataFuture       - State 0: Initialize data availability future");
+                    trace!(" [{}] GetDataFuture - State 0: START =================", *this.seq_no);
+                    trace!(" [{}] GetDataFuture - State 0: Init <DataAvailableFuture>", *this.seq_no);
                     if this.data_available_future.is_none() {
-                        let data_available = DataAvailableFuture::new(3000);
+                        let data_available = DataAvailableFuture::new(*this.seq_no, 5_000);
                         this.data_available_future.set(Some(data_available)); // Init the data_available future
                     }
                     *this.state = 1;  // Transition to state 1 (waiting)
@@ -278,16 +282,16 @@ impl Future for GetDataFuture {
                 //-- state 1: Wait for the data availability future to complete
                 1 => {
                     if let Some(data_available_future) = this.data_available_future.as_mut().as_pin_mut() {
-                        trace!("GetDataFuture       - State 1: -->> poll(cx)");
+                        trace!(" [{}] GetDataFuture - State 1: -->> POLL <DataAvailableFuture>", *this.seq_no);
                         match data_available_future.poll(cx) {
                             Poll::Ready(_) => {
-                                trace!("GetDataFuture       - State 1: data_available complete");
+                                trace!(" [{}] GetDataFuture - State 1: READY <DataAvailableFuture>", *this.seq_no);
                                 this.data_available_future.set(None);  // Clear the data availability future
                                 *this.state = 2;  // Transition to state 2 (data available)
                                 continue;
                             }
                             Poll::Pending => {
-                                trace!("GetDataFuture       - State 1: data_available pending");
+                                trace!(" [{}] GetDataFuture - State 1: PENDING <DataAvailableFuture>", *this.seq_no);
                                 return Poll::Pending;  // Data not yet available, return Pending and stay in waiting state
                             }
                         }       
@@ -295,23 +299,32 @@ impl Future for GetDataFuture {
                 }
                 // state 2: Data is available, return the result
                 2 => {
-                    trace!("GetDataFuture       - State 2 [*]: Data is available (return final reult 42)");
-                    trace!("GetDataFuture       - poll(cx) END ----------------------------");
+                    trace!("*[{}] GetDataFuture - State 2: Data is available (return final reult 42)", *this.seq_no);
+                    trace!("*[{}] GetDataFuture - poll(cx) END ----------------------------", *this.seq_no);
                     return Poll::Ready(42);  // Return the fixed result (42)
                 }
                 _ => {
-                    panic!("GetDataFuture      -Invalid state");
+                    panic!(" [{}] GetDataFuture - Invalid state", *this.seq_no);
                 }
             }
         }
     }   
 }
 
+//--------------------------------------------------
+// async fn data_available(millis: u64) -> bool {
+//     tokio::time::sleep(Duration::from_millis(millis)).await;
+//     true
+// }
+// 
+// async fn get_data() -> u64 {
+//     data_available(3000).await;
+//     42
+// }
 
 //--------------------------------------------------
 // Main
 //--------------------------------------------------
-
 #[tokio::main(flavor = "multi_thread", worker_threads = 1)]
 async fn main() {
     // let result: u64 = get_data().await;
@@ -319,9 +332,9 @@ async fn main() {
     env_logger::init();
     let start = Instant::now();
     let mut tasks = Vec::new();
-    for _i in 0..1 {
+    for i in 0..2 {
         tasks.push(tokio::spawn(async move {
-            let get_data = GetDataFuture::new();
+            let get_data = GetDataFuture::new(i);
             get_data.await
         }));
     }
