@@ -20,7 +20,7 @@ rustup-toolchain
 rust-toolchain
 
 # Cargo
-Cargo.lock
+# Cargo.lock
 # If you want to track Cargo.lock, remove the line above and uncomment the line below
 # # Cargo.lock
 
