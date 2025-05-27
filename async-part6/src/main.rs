@@ -227,3 +227,88 @@ where
 {
     Producer::new(DataAvailable::new(), rx, Box::new(func))
 }
+
+// Running with 1 workers
+// [2025-05-27T02:30:26Z INFO  async_part6] Total execution time with 1 Workers, 1000 Collectors: 5.08s
+// [2025-05-27T02:30:31Z INFO  async_part6] Total execution time with 1 Workers, 2000 Collectors: 5.11s
+// [2025-05-27T02:30:36Z INFO  async_part6] Total execution time with 1 Workers, 5000 Collectors: 5.24s
+// [2025-05-27T02:30:41Z INFO  async_part6] Total execution time with 1 Workers, 10000 Collectors: 5.34s
+// [2025-05-27T02:30:47Z INFO  async_part6] Total execution time with 1 Workers, 20000 Collectors: 5.43s
+// [2025-05-27T02:30:57Z INFO  async_part6] Total execution time with 1 Workers, 50000 Collectors: 10.29s
+// [2025-05-27T02:31:15Z INFO  async_part6] Total execution time with 1 Workers, 100000 Collectors: 17.90s
+// [2025-05-27T02:31:49Z INFO  async_part6] Total execution time with 1 Workers, 200000 Collectors: 33.65s
+// [2025-05-27T02:32:47Z INFO  async_part6] Total execution time with 1 Workers, 350000 Collectors: 58.49s
+// [2025-05-27T02:34:12Z INFO  async_part6] Total execution time with 1 Workers, 500000 Collectors: 84.34s
+// [2025-05-27T02:36:20Z INFO  async_part6] Total execution time with 1 Workers, 750000 Collectors: 128.51s
+// [2025-05-27T02:39:25Z INFO  async_part6] Total execution time with 1 Workers, 1000000 Collectors: 185.37s
+// [2025-05-27T02:43:51Z INFO  async_part6] Total execution time with 1 Workers, 1500000 Collectors: 265.97s
+// Running with 4 workers
+// [2025-05-27T02:43:56Z INFO  async_part6] Total execution time with 4 Workers, 1000 Collectors: 5.08s
+// [2025-05-27T02:44:02Z INFO  async_part6] Total execution time with 4 Workers, 2000 Collectors: 5.11s
+// [2025-05-27T02:44:07Z INFO  async_part6] Total execution time with 4 Workers, 5000 Collectors: 5.19s
+// [2025-05-27T02:44:12Z INFO  async_part6] Total execution time with 4 Workers, 10000 Collectors: 5.19s
+// [2025-05-27T02:44:17Z INFO  async_part6] Total execution time with 4 Workers, 20000 Collectors: 5.29s
+// [2025-05-27T02:44:23Z INFO  async_part6] Total execution time with 4 Workers, 50000 Collectors: 5.41s
+// [2025-05-27T02:44:29Z INFO  async_part6] Total execution time with 4 Workers, 100000 Collectors: 6.51s
+// [2025-05-27T02:44:41Z INFO  async_part6] Total execution time with 4 Workers, 200000 Collectors: 12.27s
+// [2025-05-27T02:45:02Z INFO  async_part6] Total execution time with 4 Workers, 350000 Collectors: 20.61s
+// [2025-05-27T02:45:31Z INFO  async_part6] Total execution time with 4 Workers, 500000 Collectors: 29.28s
+// [2025-05-27T02:46:34Z INFO  async_part6] Total execution time with 4 Workers, 750000 Collectors: 63.19s
+// [2025-05-27T02:48:17Z INFO  async_part6] Total execution time with 4 Workers, 1000000 Collectors: 102.33s
+// [2025-05-27T02:51:25Z INFO  async_part6] Total execution time with 4 Workers, 1500000 Collectors: 188.59s
+// Running with 8 workers
+// [2025-05-27T02:51:30Z INFO  async_part6] Total execution time with 8 Workers, 1000 Collectors: 5.07s
+// [2025-05-27T02:51:36Z INFO  async_part6] Total execution time with 8 Workers, 2000 Collectors: 5.11s
+// [2025-05-27T02:51:41Z INFO  async_part6] Total execution time with 8 Workers, 5000 Collectors: 5.18s
+// [2025-05-27T02:51:46Z INFO  async_part6] Total execution time with 8 Workers, 10000 Collectors: 5.20s
+// [2025-05-27T02:51:51Z INFO  async_part6] Total execution time with 8 Workers, 20000 Collectors: 5.25s
+// [2025-05-27T02:51:57Z INFO  async_part6] Total execution time with 8 Workers, 50000 Collectors: 5.46s
+// [2025-05-27T02:52:03Z INFO  async_part6] Total execution time with 8 Workers, 100000 Collectors: 6.72s
+// [2025-05-27T02:52:16Z INFO  async_part6] Total execution time with 8 Workers, 200000 Collectors: 12.42s
+// [2025-05-27T02:52:37Z INFO  async_part6] Total execution time with 8 Workers, 350000 Collectors: 20.81s
+// [2025-05-27T02:53:06Z INFO  async_part6] Total execution time with 8 Workers, 500000 Collectors: 29.41s
+// [2025-05-27T02:54:14Z INFO  async_part6] Total execution time with 8 Workers, 750000 Collectors: 67.77s
+// [2025-05-27T02:56:01Z INFO  async_part6] Total execution time with 8 Workers, 1000000 Collectors: 107.21s
+// [2025-05-27T02:59:22Z INFO  async_part6] Total execution time with 8 Workers, 1500000 Collectors: 200.99s
+// Running with 16 workers
+// [2025-05-27T02:59:27Z INFO  async_part6] Total execution time with 16 Workers, 1000 Collectors: 5.07s
+// [2025-05-27T02:59:32Z INFO  async_part6] Total execution time with 16 Workers, 2000 Collectors: 5.11s
+// [2025-05-27T02:59:37Z INFO  async_part6] Total execution time with 16 Workers, 5000 Collectors: 5.17s
+// [2025-05-27T02:59:43Z INFO  async_part6] Total execution time with 16 Workers, 10000 Collectors: 5.21s
+// [2025-05-27T02:59:48Z INFO  async_part6] Total execution time with 16 Workers, 20000 Collectors: 5.25s
+// [2025-05-27T02:59:53Z INFO  async_part6] Total execution time with 16 Workers, 50000 Collectors: 5.43s
+// [2025-05-27T03:00:00Z INFO  async_part6] Total execution time with 16 Workers, 100000 Collectors: 6.64s
+// [2025-05-27T03:00:12Z INFO  async_part6] Total execution time with 16 Workers, 200000 Collectors: 12.45s
+// [2025-05-27T03:00:33Z INFO  async_part6] Total execution time with 16 Workers, 350000 Collectors: 20.87s
+// [2025-05-27T03:01:03Z INFO  async_part6] Total execution time with 16 Workers, 500000 Collectors: 29.37s
+// [2025-05-27T03:02:07Z INFO  async_part6] Total execution time with 16 Workers, 750000 Collectors: 64.61s
+// [2025-05-27T03:03:53Z INFO  async_part6] Total execution time with 16 Workers, 1000000 Collectors: 105.59s
+// [2025-05-27T03:07:30Z INFO  async_part6] Total execution time with 16 Workers, 1500000 Collectors: 216.85s
+// Running with 32 workers
+// [2025-05-27T03:07:35Z INFO  async_part6] Total execution time with 32 Workers, 1000 Collectors: 5.07s
+// [2025-05-27T03:07:40Z INFO  async_part6] Total execution time with 32 Workers, 2000 Collectors: 5.11s
+// [2025-05-27T03:07:45Z INFO  async_part6] Total execution time with 32 Workers, 5000 Collectors: 5.16s
+// [2025-05-27T03:07:50Z INFO  async_part6] Total execution time with 32 Workers, 10000 Collectors: 5.19s
+// [2025-05-27T03:07:55Z INFO  async_part6] Total execution time with 32 Workers, 20000 Collectors: 5.25s
+// [2025-05-27T03:08:01Z INFO  async_part6] Total execution time with 32 Workers, 50000 Collectors: 5.43s
+// [2025-05-27T03:08:07Z INFO  async_part6] Total execution time with 32 Workers, 100000 Collectors: 6.59s
+// [2025-05-27T03:08:19Z INFO  async_part6] Total execution time with 32 Workers, 200000 Collectors: 11.56s
+// [2025-05-27T03:08:39Z INFO  async_part6] Total execution time with 32 Workers, 350000 Collectors: 19.62s
+// [2025-05-27T03:09:07Z INFO  async_part6] Total execution time with 32 Workers, 500000 Collectors: 28.27s
+// [2025-05-27T03:10:15Z INFO  async_part6] Total execution time with 32 Workers, 750000 Collectors: 67.73s
+// [2025-05-27T03:12:10Z INFO  async_part6] Total execution time with 32 Workers, 1000000 Collectors: 115.31s
+// [2025-05-27T03:16:06Z INFO  async_part6] Total execution time with 32 Workers, 1500000 Collectors: 235.61s
+// Running with 64 workers
+// [2025-05-27T03:16:11Z INFO  async_part6] Total execution time with 64 Workers, 1000 Collectors: 5.09s
+// [2025-05-27T03:16:16Z INFO  async_part6] Total execution time with 64 Workers, 2000 Collectors: 5.10s
+// [2025-05-27T03:16:21Z INFO  async_part6] Total execution time with 64 Workers, 5000 Collectors: 5.14s
+// [2025-05-27T03:16:26Z INFO  async_part6] Total execution time with 64 Workers, 10000 Collectors: 5.15s
+// [2025-05-27T03:16:31Z INFO  async_part6] Total execution time with 64 Workers, 20000 Collectors: 5.23s
+// [2025-05-27T03:16:37Z INFO  async_part6] Total execution time with 64 Workers, 50000 Collectors: 5.44s
+// [2025-05-27T03:16:44Z INFO  async_part6] Total execution time with 64 Workers, 100000 Collectors: 7.11s
+// [2025-05-27T03:16:56Z INFO  async_part6] Total execution time with 64 Workers, 200000 Collectors: 11.97s
+// [2025-05-27T03:17:16Z INFO  async_part6] Total execution time with 64 Workers, 350000 Collectors: 19.86s
+// [2025-05-27T03:17:44Z INFO  async_part6] Total execution time with 64 Workers, 500000 Collectors: 28.05s
+// [2025-05-27T03:18:51Z INFO  async_part6] Total execution time with 64 Workers, 750000 Collectors: 67.01s
+// [2025-05-27T03:21:36Z INFO  async_part6] Total execution time with 64 Workers, 1000000 Collectors: 165.29s
+// [2025-05-27T03:24:30Z INFO  async_part6] Total execution time with 64 Workers, 1500000 Collectors: 174.17s

@@ -8,3 +8,10 @@ members = [
     "async-part5",
     "async-part6",
 ]
+
+[profile.release]
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = "abort"
+overflow-checks = false
