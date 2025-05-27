@@ -42,8 +42,8 @@ impl DataAvailable {
         #[allow(unused_mut)]
         #[allow(unused_variables)]
         let mut rng = rand::rng();
-        // let millis = rng.gen_range(0..1000);
-        let millis = rng.random_range(0..500);
+        // let millis = rng.gen_range(0..=1000);
+        let millis = rng.random_range(0..=500);
         // let millis = 500;
         Duration::from_millis(millis)
     }
@@ -55,17 +55,17 @@ impl Stream for DataAvailable {
     type Item = bool;
 
     // Poll function to determine the next event in the stream
-    // It returns 'Poll::Ready(Some(true))' when the sleep is finished
-    // and ready to move on
+    // It returns 'Poll::Ready(Some(true))' when the sleep is finished and ready to move on
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let mut this = self.project();
 
         // Handle state transitions within the loop
         loop {
             match &mut *this.state {
+                // Init state: Create or reset the sleep future and transition to Sleeping
                 State::Init => {
+                    // Generate a random delay between 0 and 500 milliseconds
                     let delay = Self::random_delay();
-                    // 기존 sleep_future를 새로운 인스턴스로 교체
                     // If sleep_future exists, reset it with the new delay
                     if let Some(ref mut sleep_future) = *this.sleep_future {
                         sleep_future.as_mut().reset(tokio::time::Instant::now() + delay);

@@ -32,9 +32,6 @@ where
 {
     /// Constructor for Producer
     /// Takes a DataAvailable stream, an mpsc receiver, and a post-processing function
-    /// @param data_available: The DataAvailable stream
-    /// @param receiver: The mpsc receiver
-    /// @param post_process_fn: A boxed function for post-processing the received data
     pub fn new(data_available: DataAvailable, 
                 receiver: mpsc::Receiver<T>, 
                 post_process_fn: Box<dyn Fn(T) -> T + 'static + Send>) -> Self {

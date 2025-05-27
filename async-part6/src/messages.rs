@@ -24,6 +24,7 @@ pub trait SensorMessage<T> {
     fn set_error(&mut self) -> &mut Self;
     fn set_unusable(&mut self, fallback_value: T) -> &mut Self;
     fn set_sensor_name(&mut self, content: String) -> &mut Self;
+
     fn to_values(messages: Vec<Message<T>>) -> Vec<T>
     where
         T: Copy,
@@ -98,6 +99,13 @@ pub trait SensorMessage<T> {
 }
 
 #[derive(Serialize, Deserialize)]
+enum InnerMessage<T> {
+    Value(T),
+    Error,
+    NotValid(T),
+}
+
+#[derive(Serialize, Deserialize)]
 pub struct Message<T> {
     message: InnerMessage<T>,
     sensor_name: String,
@@ -110,13 +118,6 @@ impl<T> Message<T> {
             sensor_name, 
         }
     }
-}
-
-#[derive(Serialize, Deserialize)]
-enum InnerMessage<T> {
-    Value(T),
-    Error,
-    NotValid(T),
 }
 
 impl<T> SensorMessage<T> for Message<T>

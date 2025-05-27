@@ -57,6 +57,9 @@ where
                 }
                 // If the producer stream has finished (returns None), return the collected data
                 Poll::Ready(None) => {
+                    // Return the vector with all the collected items
+                    // use std::mem::take to efficiently take ownership of the collected data 
+                    // while leaving an empty Vec in its place.
                     return Poll::Ready(std::mem::take(this.collected_data));
                 }
                 // If the producer stream is not ready yet, return Poll::Pending
